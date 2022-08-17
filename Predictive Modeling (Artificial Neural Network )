@@ -1,0 +1,43 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+
+# Create X variable for continuous inputs list using column numbers
+X = df1.iloc[:, [2, 3, 8, 9, 11, 13, 14, 15, 16, 17]]
+
+# Create Y variables
+y = df1['Dissolution']  # Regression Y Variable
+
+# Random Assignment of Training and Test (15%) Datasets (Regression Model)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=10)
+
+# Calculate Standard Dev and Mean of Inputs, then perform standardization
+scaler = StandardScaler()
+scaler.fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Fit Neural Network Regression Model
+NN = MLPRegressor(hidden_layer_sizes=(3, 3), solver='lbfgs', max_iter=10000, activation='relu', random_state=123)
+NN.fit(X_train, y_train)
+NN_pred_train = NN.predict(X_train)
+NN_pred_test = NN.predict(X_test)
+Rsq_train = r2_score(y_train, NN_pred_train)
+Rsq_test = r2_score(y_test, NN_pred_test)
+
+# Creat Actual vs. Predicted Plot
+plt.figure()
+plt.plot(y_train, y_train, '-')
+plt.plot(NN_pred_test, y_test, '.', color="blue", label="Test (Rsq=%.2f)" % Rsq_test, linewidth=2)
+plt.plot(NN_pred_train, y_train, '.', color="red", label="Training (Rsq=%.2f)" % Rsq_train, linewidth=2)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Neural Network Model")
+plt.legend()
+plt.show()
