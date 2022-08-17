@@ -1,0 +1,33 @@
+import pandas as pd
+import numpy as np
+from scipy import stats
+from varclushi import VarClusHi
+from sklearn.decomposition import PCA
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+
+# Perform Johnson SU Transformation on Mill Time
+df1['Mill Time TF'] = np.log(
+    (df1['Mill Time'] - 2.05335350549557) / (31.5129470570644 - df1['Mill Time'])) * 0.688060127415144 + (
+                          -0.0459052982612559)
+
+# Perform Shapiro-Wilk Test for Normality
+shapiro_MT = stats.shapiro(df1['Mill Time'])
+shapiro_MTTF = stats.shapiro(df1['Mill Time TF'])
+
+# Create Bins for Mill Time
+df1['Mill Time Grouped'] = pd.qcut(df1['Mill Time'], q=6)
+
+# List of Input variables for PCA
+X = df1.iloc[:, [2, 3, 8, 9, 11, 13, 14, 15, 16, 17]]
+
+# PCA Variable Elimination (Column Clustering)
+PCA_VE = VarClusHi(X, maxeigval2=1, maxclus=None)
+PCA_VE.varclus()
+Clusters_Rsq = pd.DataFrame(PCA_VE.rsquare)
+
+# PCA Variable Reduction (New Multivariate Variables)
+PCA_VR = PCA(n_components=2)
+PCA_VR.fit(X)
+df1[['PCA 1', 'PCA 2']] = PCA_VR.fit_transform(X)
