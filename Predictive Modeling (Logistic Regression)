@@ -1,0 +1,53 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.metrics import r2_score, confusion_matrix
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+
+# Model Input (Main Effects Terms)
+X1 = df1.iloc[:, [2, 3, 8, 9, 13, 16, 17]]
+
+# Model Input (Main Effects Polynomials & Interaction Terms)
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X2 = poly.fit_transform(X1)
+X2 = pd.DataFrame(X2, columns=poly.get_feature_names_out(X1.columns))
+
+# Target Variable
+y_linear = df1['Dissolution']  # Linear Regression
+y_category = df1['Lot Acceptance']  # Logistic Regression
+
+# Random Assignment of Training and Test (15%) Datasets (Regression Model)
+xlin_train, xlin_test, ylin_train, ylin_test = train_test_split(X2, y_linear, test_size=0.15, random_state=5)
+
+# Random Assignment of Training and Test (15%) Datasets (Logistic Model)
+xcat_train, xcat_test, ycat_train, ycat_test = train_test_split(X2, y_category, test_size=0.15, random_state=5)
+
+# Build Linear Regression Model with Training Data
+ols = LinearRegression()
+ols.fit(xlin_train, ylin_train)
+
+# Score Results of Model with Test Data
+lin_prediction = ols.predict(xlin_test)
+Rsq = r2_score(ylin_test, lin_prediction)
+
+# Create Actual vs. Predicted Graph
+plt.figure(1)
+plt.plot(ylin_test, lin_prediction, '.')
+plt.plot(ylin_test, ylin_test, '-')
+plt.show()
+
+# Build Logistic Regression Model with Training Data
+lr = LogisticRegression(max_iter=10000)
+lr.fit(xcat_train, ycat_train)
+
+# Score Results of Model with Test Data
+Prob = lr.predict_proba(xcat_test)
+cat_prediction = lr.predict(xcat_test)
+accuracy = lr.score(xcat_test, ycat_test)
+
+# Create Confusion Matrix
+cm = confusion_matrix(ycat_test, cat_prediction)
