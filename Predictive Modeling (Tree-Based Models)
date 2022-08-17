@@ -1,0 +1,57 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import tree
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+
+# Create X variable for continuous inputs list using column numbers
+X = df1.iloc[:, [2, 3, 8, 9, 11, 13, 14, 15, 16, 17]]
+
+# Create Y variables
+y = df1['Dissolution']  # Regression Y Variable
+
+# Random Assignment of Training and Test (15%) Datasets (Regression Model)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=5)
+
+# Fit Decision Tree Regression Model
+DT = tree.DecisionTreeRegressor(random_state=123)
+DT.fit(X_train, y_train)
+DT_pred = DT.predict(X_test)
+Rsq_DT = r2_score(y_test, DT_pred)
+
+# Fit Random Forest Regression Model
+RF = RandomForestRegressor(random_state=123)
+RF.fit(X_train, y_train)
+RF_pred = RF.predict(X_test)
+Rsq_RF = r2_score(y_test, RF_pred)
+
+# Fit Gradient Boosted Regression Model
+BT = GradientBoostingRegressor(random_state=123)
+BT.fit(X_train, y_train)
+BT_pred = BT.predict(X_test)
+Rsq_BT = r2_score(y_test, BT_pred)
+
+# Fit XGBoost Regression Model
+XBT = xgb.XGBRegressor(random_state=123)
+XBT.fit(X_train, y_train)
+XBT_pred = XBT.predict(X_test)
+Rsq_XBT = r2_score(y_test, XBT_pred)
+
+# Creat Actual vs. Predicted Plot
+plt.figure()
+plt.plot(y_test, y_test, '-')
+plt.plot(DT_pred, y_test, '.', color="blue", label="DT", linewidth=2)
+plt.plot(RF_pred, y_test, '.', color="red", label="RF", linewidth=2)
+plt.plot(BT_pred, y_test, '.', color="green", label="BT", linewidth=2)
+plt.plot(XBT_pred, y_test, '.', color="orange", label="XBT", linewidth=2)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Tree-Based Regression Models")
+plt.legend()
+plt.show()
