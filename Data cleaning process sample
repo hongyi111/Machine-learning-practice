@@ -1,0 +1,30 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.impute import KNNImputer
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv("Arrhythmia.csv")
+
+# Identify missing values in dataframe (NaN) for imputation w/ KNN Method
+imputer = KNNImputer(missing_values=np.nan, n_neighbors=3)
+
+# Perform Imputation using select columns
+X = imputer.fit_transform(df1[['J', 'Height', 'Weight']])
+
+# Create new dataframe with imputed values
+df_imp = pd.DataFrame(X, columns=['J', 'Height', 'Weight'])
+
+# Finding Outliers - Produce Box Plot
+boxplot = df1.boxplot(column=['Q-T interval'])
+plt.show()
+
+# Outlier Definition 1.5 IQR
+q1 = df1["Q-T interval"].quantile(0.25)
+q3 = df1["Q-T interval"].quantile(0.75)
+IQR = q3 - q1
+Lower = q1 - 1.5 * IQR
+Upper = q3 + 1.5 * IQR
+
+# Place outliers in a new dataframe
+df_outliers = df1[(df1['Q-T interval'] < Lower) | (df1['Q-T interval'] > Upper)]
