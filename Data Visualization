@@ -1,0 +1,43 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+df2 = df1.iloc[:, [2, 8, 18]]
+
+# Set Dark Colour Theme
+sns.set_theme(style="darkgrid")
+
+# Line Plot w/ 95% Confidence Interval (Time Consuming Calculation)
+sns.lineplot(data=df1, x="Mill Time", y="Dissolution")
+plt.show()
+
+# Histogram Subsets
+hist1 = sns.displot(data=df1, x="Dissolution", col="Screen Size", row="Lactose Supplier",
+                    binwidth=3, height=3, facet_kws=dict(margin_titles=True))
+plt.show()
+
+# Kernel Density Plot
+plt.figure()
+sns.kdeplot(data=df1, x="Dissolution", y="Blend Time", hue="Screen Size", thresh=.1, )
+plt.show()
+
+# Overlay Plot
+sns.lmplot(data=df1, x="Mill Time", y="Dissolution", hue="Screen Size", height=5)
+plt.show()
+
+# Combined Graph (Scatterplot w/ Histograms)
+sns.jointplot(data=df1, x="Mill Time", y="Dissolution", hue="Screen Size")
+plt.show()
+
+# Scatterplot Matrix for All Data in Subset DF2
+sns.pairplot(df2, kind="reg")
+plt.show()
+
+# Combined Scatterplot
+g = sns.PairGrid(df2, diag_sharey=False)
+g.map_upper(sns.scatterplot, s=15)
+g.map_lower(sns.kdeplot)
+g.map_diag(sns.kdeplot, lw=2)
+plt.show()
