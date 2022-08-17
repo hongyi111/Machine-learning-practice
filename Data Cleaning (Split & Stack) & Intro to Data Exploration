@@ -1,0 +1,43 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Read in CSV File to Dataframe from websource
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+
+# Split Talc Supplier Column with Dissolution data
+df1_split = df1.pivot(columns='Talc Supplier', values='Dissolution')
+
+# Create First Figure
+plt.figure(1)
+
+# Create Histogram-1, Using subplots (1 row, 2 cols)
+plt.subplot(121)
+plt.hist(df1_split['Rough'], bins=10)
+plt.xlabel('Rough')
+plt.ylabel('Frequency')
+plt.grid(True)
+
+# Create Histogram-2, Using subplots (1 row, 2 cols)
+plt.subplot(122)
+plt.hist(df1_split['Smooth'], bins=10)
+plt.xlabel('Smooth')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.show()
+
+# Stack columns, reset index, rename column names, merge with Dissolution
+df1_stack = df1[['Inlet Temp', 'Exhaust Temp']].stack()
+df1_stack = df1_stack.reset_index(name='Temperature')
+df1_stack = df1_stack.rename(columns={'level_1': 'Location', 'level_0': 'Row'})
+df1['Row'] = df1.index
+df1_stack = pd.merge(df1_stack, df1[['Row', 'Dissolution']], on='Row')
+
+# Create Second Figure
+plt.figure(2)
+
+# Create Scatter Plot
+plt.scatter(df1_stack['Dissolution'], df1_stack['Temperature'])
+plt.xlabel('Dissolution')
+plt.ylabel('Temperature')
+plt.grid(True)
+plt.show()
