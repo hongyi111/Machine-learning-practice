@@ -1,0 +1,42 @@
+import pandas as pd
+from sklearn import tree
+import graphviz
+
+# Read in CSV File to Dataframe
+df1 = pd.read_csv('http://www.nickshelton.ca/Tablet_Production.csv')
+
+# Create X variable for continuous inputs list using column numbers
+X = df1.iloc[:, [2, 3, 8, 9, 11, 13, 14, 15, 16, 17]]
+
+# Create Y variables
+y = df1['Dissolution']  # Regression Y Variable
+y2 = df1['Lot Acceptance']  # Classifier Y variable
+
+# Fit Decision Tree Regression Model
+clf = tree.DecisionTreeRegressor(max_depth=3)
+clf = clf.fit(X, y)
+
+# Fit Decision Tree Classification Model
+clf2 = tree.DecisionTreeClassifier(max_depth=3)
+clf2 = clf2.fit(X, y2)
+
+# Capture Variable Importances for Regression Model
+df_FI = pd.DataFrame(clf.feature_importances_, columns=['Variable Importance'])
+df_FI['X'] = X.columns
+df_FI = df_FI.sort_values('Variable Importance', ascending=False)
+
+# Capture Variable Importances for Classification Model
+df_FI2 = pd.DataFrame(clf2.feature_importances_, columns=['Variable Importance'])
+df_FI2['X'] = X.columns
+df_FI2 = df_FI2.sort_values('Variable Importance', ascending=False)
+
+# Graphviz Regression Tree
+dot_data = tree.export_graphviz(clf, out_file=None, feature_names=X.columns, filled=True)
+graph = graphviz.Source(dot_data, format="png")
+graph.render("Regression_Graphviz")
+
+# Graphviz Classification Tree
+dot_data2 = tree.export_graphviz(clf2, out_file=None, feature_names=X.columns, class_names=['Accept', 'Reject'],
+                                 filled=True)
+graph2 = graphviz.Source(dot_data2, format="png")
+graph2.render("Classification_Graphviz")
